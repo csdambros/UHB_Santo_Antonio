@@ -29,18 +29,10 @@ SAE_cupins[Modulo=="JP"&Transecto=="T2"&Po,]
 
 levels(as.factor(Ponto[Modulo=="TE"&Transecto=="T2"]))
 
-source("Relatorio_geral.R")
+
+source("Relatorio_geral_Transectos.agrupados.R")
 
 
-
-
-
-
- p <- ggplot(data.frame(scores(SAE_cupins_NMDS)), aes(x=NMDS1, y=NMDS2, label=rownames(scores(SAE_cupins_NMDS))))
-
-p + geom_text(fontface=3)
-     p + geom_text(aes(fontface=am+1))
-     p + geom_text(aes(family=c("serif", "mono")[am+1]))
-     
+    
 
 
