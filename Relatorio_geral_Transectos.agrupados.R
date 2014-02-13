@@ -1,6 +1,6 @@
 source("WDIR.R")
  
-SAE_cupins<-read.csv(paste(WDIR,"/SAE_cupins_cor_names.csv",sep=""),row.names=1)
+SAE_cupins<-read.csv(paste(WDIR,"/sae_cupins.csv",sep=""),row.names=1)
 
 ambiente<-read.csv(paste(WDIR,"/dados_ambientais.csv",sep=""),row.names=1)
 
@@ -12,12 +12,12 @@ ambiente<-read.csv(paste(WDIR,"/dados_ambientais.csv",sep=""),row.names=1)
 
 SAE_cupins<-SAE_cupins[SAE_cupins$Subfamilia!="Apicotermitinae",]
 
-SAE_cupins$Campanha[-grep("[0-9]{2}",SAE_cupins$Campanha)]<- paste(0,SAE_cupins$Campanha[-grep("[0-9]{2}",SAE_cupins$Campanha)],sep="")
+#SAE_cupins$Campanha.char[-grep("[0-9]{2}",SAE_cupins$Campanha)]<-	paste(0,SAE_cupins$Campanha[-grep("[0-9]{2}",SAE_cupins$Campanha)],sep="")
 
-range=1:max(as.numeric(SAE_cupins$Campanha)) #mudar se não quiser considerar todas as campanhas
+range=1:max(SAE_cupins$Campanha) #mudar se não quiser considerar todas as campanhas
 #range=1:10
 
-SAE_cupins <- data.frame(SAE_cupins[!is.na(match(as.numeric(SAE_cupins$Campanha),range)),])
+SAE_cupins <- data.frame(SAE_cupins[!is.na(match(SAE_cupins$Campanha,range)),])
 
 attach(SAE_cupins)
 
@@ -33,16 +33,16 @@ SAE_cupins_encontros.modulo<- by(SAE_cupins,paste(Familia,Subfamilia,sep=","),fu
 
 
 SAE_cupins_encontros.modulo_sub<-
-    lapply(1:length(SAE_cupins_encontros.modulo),
-           function(i){
-               x<-SAE_cupins_encontros.modulo[[i]]
-               if(is.null(x)){NULL}
-               else{
-                   x[is.na(x)]<-0;
-                   data.frame("Familia,Subfamilia"=names(SAE_cupins_encontros.modulo)[i],x)[rowSums(x)>0,]                
-               }
-           }
-           )
+	lapply(1:length(SAE_cupins_encontros.modulo),
+		function(i){
+			x<-SAE_cupins_encontros.modulo[[i]]
+			if(is.null(x)){NULL}
+			else{
+				x[is.na(x)]<-0;
+				data.frame("Familia,Subfamilia"=names(SAE_cupins_encontros.modulo)[i],x)[rowSums(x)>0,]                
+			}
+		}
+	)
 
 SAE_cupins_encontros.modulo_sub2<-do.call(rbind,SAE_cupins_encontros.modulo_sub)
 colnames(SAE_cupins_encontros.modulo_sub2)<-gsub("\\.","\\,",colnames(SAE_cupins_encontros.modulo_sub2))
@@ -51,21 +51,21 @@ write.csv(SAE_cupins_encontros.modulo_sub2,file="Tabelas_output/Encontros.por.mo
 
 ####
 
-SAE_cupins_encontros.campanha<- by(SAE_cupins,paste(Familia,Subfamilia,sep=","),function(x)tapply(x$Num._Ind._.Colonias.Encontros.,list(x$Especie,factor(x$Campanha,levels=levels(as.factor(Campanha)))),sum))
+SAE_cupins_encontros.campanha<- by(SAE_cupins,paste(Familia,Subfamilia,sep=","),function(x)tapply(x$Num._Ind._.Colonias.Encontros.,list(x$Especie,factor(x$Campanha,levels=range)),sum))
 
 #factor(Campanha[1:10],levels=levels(as.factor(Campanha)))
 
 SAE_cupins_encontros.campanha_sub<-
-    lapply(1:length(SAE_cupins_encontros.campanha),
-           function(i){
-               x<-SAE_cupins_encontros.campanha[[i]]
-               if(is.null(x)){NULL}
-               else{
-                   x[is.na(x)]<-0;
-                   data.frame("Familia,Subfamilia"=names(SAE_cupins_encontros.campanha)[i],x)[rowSums(x)>0,]
-                               }
-           }
-           )
+	lapply(1:length(SAE_cupins_encontros.campanha),
+		function(i){
+			x<-SAE_cupins_encontros.campanha[[i]]
+			if(is.null(x)){NULL}
+			else{
+				x[is.na(x)]<-0;
+				data.frame("Familia,Subfamilia"=names(SAE_cupins_encontros.campanha)[i],x)[rowSums(x)>0,]
+			}
+		}
+	)
 
 
 SAE_cupins_encontros.campanha_sub2<-do.call(rbind,SAE_cupins_encontros.campanha_sub)
@@ -78,24 +78,24 @@ write.csv(SAE_cupins_encontros.campanha_sub2,file="Tabelas_output/Encontros.por.
 #########
 
 
-levels.mc<-paste(expand.grid(levels(Modulo),levels(as.factor(Campanha)))[,1],
-expand.grid(levels(Modulo),levels(as.factor(Campanha)))[,2],sep="_")
+levels.mc<-paste(expand.grid(levels(Modulo),range)[,1],
+expand.grid(levels(Modulo),range)[,2],sep="_")
 
 
 SAE_cupins_encontros.modulo.campanha<- by(SAE_cupins,paste(Familia,Subfamilia,sep=","),function(x)tapply(x$Num._Ind._.Colonias.Encontros.,list(x$Especie,factor(paste(x$Modulo,x$Campanha,sep="_"),levels=levels.mc)),sum))
 
 
 SAE_cupins_encontros.modulo.campanha_sub<-
-    lapply(1:length(SAE_cupins_encontros.modulo.campanha),
-           function(i){
-               x<-SAE_cupins_encontros.modulo.campanha[[i]]
-               if(is.null(x)){NULL}
-               else{
-                   x[is.na(x)]<-0;
-                   data.frame("Familia,Subfamilia"=names(SAE_cupins_encontros.modulo.campanha)[i],x)[rowSums(x)>0,]                
-               }
-           }
-           )
+	lapply(1:length(SAE_cupins_encontros.modulo.campanha),
+		function(i){
+			x<-SAE_cupins_encontros.modulo.campanha[[i]]
+			if(is.null(x)){NULL}
+			else{
+				x[is.na(x)]<-0;
+				data.frame("Familia,Subfamilia"=names(SAE_cupins_encontros.modulo.campanha)[i],x)[rowSums(x)>0,]                
+			}
+		}
+	)
 
 SAE_cupins_encontros.modulo.campanha_sub2<-do.call(rbind,SAE_cupins_encontros.modulo.campanha_sub)
 
@@ -111,15 +111,15 @@ write.csv(SAE_cupins_encontros.modulo.campanha_sub2,file="Tabelas_output/Encontr
 
 ############################################
 
-SAE_cupins_short<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="-"),Especie),sum)
+SAE_cupins_short<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="_"),Especie),sum)
 SAE_cupins_short_var <- ambiente[match(rownames(SAE_cupins_short),rownames(ambiente)),]
 
-SAE_cupins_short_by_modulo<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="-"),Especie,paste(Modulo,sep="-")),sum,simplify=TRUE)
+SAE_cupins_short_by_modulo<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="_"),Especie,paste(Modulo,sep="_")),sum,simplify=TRUE)
 
-SAE_cupins_short_by_campanha<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="-"),Especie,Campanha),sum,simplify=TRUE)
+SAE_cupins_short_by_campanha<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="_"),Especie,Campanha),sum,simplify=TRUE)
 #SAE_cupins_short_by_campanha_var <- lapply(SAE_cupins_short_by_campanha,function(x) ambiente[match(rownames(x),rownames(ambiente)),])
 
-SAE_cupins_short_by_campanha_modulo<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="-"),Especie,paste(Campanha,Modulo,sep="-")),sum,simplify=TRUE)
+SAE_cupins_short_by_campanha_modulo<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Modulo,Transecto,Ponto,sep="_"),Especie,paste(Campanha,Modulo,sep="_")),sum,simplify=TRUE)
 #SAE_cupins_short_by_campanha_modulo_var <- lapply(SAE_cupins_short_by_campanha_modulo,function(x) ambiente[match(rownames(x),rownames(ambiente)),])
 
 #SAE_cupins_short_by_campanha_modulo<-tapply(Num._Ind._.Colonias.Encontros.,list(paste(Transecto,Ponto),Especie,paste(Campanha,Modulo,Transecto)),sum,simplify=TRUE)
@@ -134,6 +134,7 @@ SAE_cupins_short_by_campanha_modulo[is.na(SAE_cupins_short_by_campanha_modulo)]<
 
 
 SAE_cupins_short_by_modulo<-lapply(seq_len(dim(SAE_cupins_short_by_modulo)[3]),function(i) SAE_cupins_short_by_modulo[,,i])
+
 SAE_cupins_short_by_modulo<-lapply(SAE_cupins_short_by_modulo,function(x){x<-data.frame(x);x[rowSums(x)>0,]})
 
 SAE_cupins_short_by_modulo_var <- lapply(SAE_cupins_short_by_modulo,function(x) ambiente[match(rownames(x),rownames(ambiente)),])
@@ -151,13 +152,13 @@ SAE_cupins_short_by_campanha_modulo_var <- lapply(SAE_cupins_short_by_campanha_m
 #lapply(SAE_cupins_short_by_campanha_modulo_var,nrow)
 
 
-names(SAE_cupins_short_by_modulo) <- levels(as.factor(paste(Modulo,sep="-")))
+names(SAE_cupins_short_by_modulo) <- levels(as.factor(paste(Modulo,sep="_")))
 #str(SAE_cupins_short_by_modulo)
 
-names(SAE_cupins_short_by_campanha) <- levels(as.factor(Campanha))
+names(SAE_cupins_short_by_campanha) <- range
 #str(SAE_cupins_short_by_campanha)
  
-names(SAE_cupins_short_by_campanha_modulo) <- levels(as.factor(paste(Campanha,Modulo,sep="-")))
+names(SAE_cupins_short_by_campanha_modulo) <- sort(factor(unique(paste(Modulo,Campanha,sep="_")),levels=levels.mc))
 
 
 #str(SAE_cupins_short_by_campanha_modulo)
@@ -178,7 +179,8 @@ library(BiodiversityR)
 
 # Abundancia
 
-abund_c_m <- unlist(lapply(SAE_cupins_short_by_campanha_modulo,sum))
+#abund_c_m <- unlist(lapply(SAE_cupins_short_by_campanha_modulo,function(x)sum(as.matrix(x))))
+abund_c_m <- unlist(lapply(SAE_cupins_short_by_campanha_modulo,function(x)sum(x)))
 
 #Numero estimado de especies
 est.rich <- specpool(SAE_cupins_short)
@@ -204,7 +206,7 @@ print(ggplot(SAE_cupins_geral,aes(site,rich))+
     geom_point()+geom_line(data=SAE_cupins_geral)+
     geom_ribbon(data=SAE_cupins_geral,aes(ymin=sd.l,ymax=sd.u),alpha=0.3)+
     facet_wrap(~id)+
-    ylab("N?mero de esp?cies")+xlab("N?mero de amostras"))
+    ylab("N?mero de espécies")+xlab("Número de amostras"))
 
 dev.print(device = cairo_ps, file="Figuras/rarefacao.eps")
 dev.copy2pdf(file="Figuras/rarefacao.geral.pdf")
@@ -215,11 +217,11 @@ dev.off()
 
 hist.abund <- data.frame(abund=sort(colSums(SAE_cupins_short[,colSums(SAE_cupins_short)>0]),decreasing = T),names=1:sum(colSums(SAE_cupins_short)>0))
 
-print(ggplot(data.frame(ab=rep(hist.abund$names,hist.abund$abund)),aes(ab))+geom_bar()+xlab("Rank de esp?cies")+ylab("Frequ?ncia"))
+print(ggplot(data.frame(ab=rep(hist.abund$names,hist.abund$abund)),aes(ab))+geom_bar()+xlab("Rank de espécies")+ylab("Frequência"))
 
 rank <- rankabundance(SAE_cupins_short)
 
-print(ggplot(data.frame(rank),aes(rank,abundance+1))+geom_point()+scale_y_log10()+xlab("Rank de esp?cies")+ylab("Frequ?ncia (log)")+geom_smooth(stat = "smooth"))
+print(ggplot(data.frame(rank),aes(rank,abundance+1))+geom_point()+scale_y_log10()+xlab("Rank de espécies")+ylab("Frequência (log)")+geom_smooth(stat = "smooth"))
 
 dev.print(device = cairo_ps, file="Figuras/rank.abundancias.eps")
 dev.copy2pdf(file="Figuras/rank.abundancias.pdf")
@@ -232,7 +234,7 @@ hist.abund_by_campanha_temp2<- lapply(1:length(hist.abund_by_campanha_temp),func
 hist.abund_by_campanha <- do.call(rbind,hist.abund_by_campanha_temp2)
 hist.abund_by_campanha <- hist.abund_by_campanha[hist.abund_by_campanha$abundance>0,]
 
-print(ggplot(hist.abund_by_campanha,aes(rank,abundance+1))+geom_point()+scale_y_log10()+xlab("Rank de esp?cies")+ylab("Frequ?ncia (log)")+geom_smooth(method="loess")+facet_wrap(~id))
+print(ggplot(hist.abund_by_campanha,aes(rank,abundance+1))+geom_point()+scale_y_log10()+xlab("Rank de espécies")+ylab("Frequência (log)")+geom_smooth(method="loess")+facet_wrap(~id))
 
 dev.print(device = cairo_ps, file="Figuras/rank.abundancias_campanhas.eps")
 dev.copy2pdf(file="Figuras/rank.abundancias_campanhas.pdf")
@@ -351,7 +353,7 @@ var_campanha<-lapply(
        SAE_cupins_NMDS_s<-scores(metaMDS(vegdist(x,"horn")))     
        data.frame(rich=accum$richness,site=accum$sites,sd.l=accum$richness-1.96*accum$sd,
                   sd.u=accum$richness+1.96*accum$sd,SAE_cupins_NMDS_s,
-                  ambiente[match(rownames(x),rownames(ambiente)),],id=names(SAE_cupins_short_by_campanha)[i],campanha=strsplit(names(SAE_cupins_short_by_campanha[i]),"-")[[1]][1])})
+                  ambiente[match(rownames(x),rownames(ambiente)),],id=names(SAE_cupins_short_by_campanha)[i],campanha=strsplit(names(SAE_cupins_short_by_campanha[i]),"_")[[1]][1])})
        
 
 SAE_cupins_var_by_campanha<-do.call(rbind,var_campanha)
@@ -408,12 +410,12 @@ var_campanha_modulo<-lapply(
        data.frame(rich=accum$richness,site=accum$sites,sd.l=accum$richness-1.96*accum$sd,
                   sd.u=accum$richness+1.96*accum$sd,by.mod=SAE_cupins_NMDS_s,ambiente[match(rownames(x),rownames(ambiente)),],
                   id=names(SAE_cupins_short_by_campanha_modulo)[i],
-                  campanha=strsplit(names(SAE_cupins_short_by_campanha_modulo[i]),"-")[[1]][1])})
+                  campanha=strsplit(names(SAE_cupins_short_by_campanha_modulo[i]),"_")[[1]][1])})
 
 
 SAE_cupins_var_by_campanha_modulo<-do.call(rbind,var_campanha_modulo)
 
-campanha_modulo<-do.call(rbind,strsplit(as.character(SAE_cupins_var_by_campanha_modulo$id),"-"))
+campanha_modulo<-do.call(rbind,strsplit(as.character(SAE_cupins_var_by_campanha_modulo$id),"_"))
 
 especies_campanha_modulo<-do.call(rbind,SAE_cupins_short_by_campanha_modulo)
 
@@ -441,7 +443,11 @@ for(i in levels(as.factor(campanha_modulo[,1]))){
 
 #Cada grafico, um painel com uma localidade em todas as campanhas
 
-for(i in levels(as.factor(paste(campanha_modulo[,2])))){
+levels(as.factor(paste(campanha_modulo[,2])))
+
+sort(factor(unique(paste(Modulo,Campanha,sep="_")),levels=levels.mc))
+
+for(i in range){
     
     x<-SAE_cupins_var_by_campanha_modulo[paste(campanha_modulo[,2])==i,]
 
@@ -460,7 +466,7 @@ for(i in levels(as.factor(paste(campanha_modulo[,2])))){
 # Grafico da abundância e riqueza estimada em cada modulo por campanha
 # Exatamente como no exemplo das normas em pdf
 
-campanha_modulo2<-data.frame(do.call(rbind,strsplit(names(SAE_cupins_short_by_campanha_modulo),"-")))
+campanha_modulo2<-data.frame(do.call(rbind,strsplit(names(SAE_cupins_short_by_campanha_modulo),"_")))
 
 #campanha_modulo2$X1<-as.ordered(campanha_modulo2$X1)
 summary(campanha_modulo2)
@@ -498,8 +504,12 @@ dev.copy2pdf(file=paste("Figuras/","abund.","mod-",i,".pdf",sep=""))
 dev.off()
 }
 
+#levels.mc.restrict<-sort(factor(unique(paste(Modulo,Campanha,sep="_")),levels=levels.mc))
+
 
 ### Riqueza
+
+est.rich.split_m_c$X2<-factor(est.rich.split_m_c$X2,levels=range)
 
 print(ggplot(data=est.rich.split_m_c,aes(X1,jack1))+ geom_point()+
 geom_errorbar(data=est.rich.split_m_c,aes(ymin=jack1-1.96*jack1.se,ymax=jack1+1.96*jack1.se),width=0.3)+
@@ -557,7 +567,7 @@ dev.off()
 ################
 
 jost.diversity_campanha<-do.call(rbind,lapply(SAE_cupins_short_by_campanha,jost.diver))
-jost.diversity_campanha <- data.frame(jost.diversity_campanha,Campanha=rownames(jost.diversity_campanha))
+jost.diversity_campanha <- data.frame(jost.diversity_campanha,Campanha=factor(rownames(jost.diversity_campanha),levels=range))
 
 jost.diversity_campanha_long<-melt(jost.diversity_campanha,id="Campanha",variable_name = "Diversidade")
 
@@ -584,6 +594,8 @@ jost.diversity_campanha_modulo<-do.call(rbind,lapply(SAE_cupins_short_by_campanh
 jost.diversity_campanha_modulo <- data.frame(jost.diversity_campanha_modulo,campanha_modulo2)
 
 jost.diversity_campanha_modulo_long<-melt(jost.diversity_campanha_modulo,variable_name = "Diversidade")
+
+jost.diversity_campanha_modulo_long$X2<-factor(jost.diversity_campanha_modulo_long$X2,levels=range)
 
 print(ggplot(jost.diversity_campanha_modulo_long,aes(X1,1-1/value,group=Diversidade,color=Diversidade))+geom_point()+geom_line()+ylab("Diversidade (Gini-Simpson)")+xlab("Campanha")+facet_wrap(~X2))
 
@@ -718,16 +730,3 @@ dev.off()
 ################
 ################
 ################
-#Campanha 11
-
-ver <- lapply(SAE_cupins_short_by_campanha,function(x){
-data.frame(t(data.frame(strsplit(rownames(x),"-"))),S=rowSums(x))
-})
-
-plot(ver[[11]]$S~as.numeric(ver[[11]]$X3))
-
-summary(lm(ver[[11]]$S~as.numeric(ver[[11]]$X3)+as.numeric(ver[[11]]$X1)))
-
-
-
-
